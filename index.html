@@ -270,7 +270,7 @@
 					subtotal: subtotalField.value,
 					tax: taxField.value,
 					total: totalField.value,
-					deliveryTime: deliveryTime
+					deliveryTime: deliveryTime.toString().slice(16,24)
 				}
 				console.log(data)
 				localStorage.setItem('order', JSON.stringify(data))
