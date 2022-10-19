@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+</head>
+
+<body>
+    <div class="container">
+        <h2 id="total"></h2>
+        <h3 style="color: grey;" id="subtotal"></h3>
+        <h3 style="color: grey;" id="tax"></h3>
+        <hr>
+        <h3>Here Are Your Order Details</h3>
+        <table id="table">
+            <tr>
+
+                <th style="padding:10px">Quantity</th>
+                <th style="padding:10px">Item</th>
+                <th style="padding:10px">Cost</th>
+            </tr>
+
+
+        </table>
+<hr>
+        <div style="padding:20px; color:grey" id="deliveryTime"></div>
+        <hr>
+    </div>
+
+    <script>
+        let data = JSON.parse(localStorage.getItem('order'))
+        let total = document.getElementById("total")
+        let subtotal = document.getElementById("subtotal")
+        let tax = document.getElementById("tax")
+        let table = document.getElementById('table')
+        let delivery = document.getElementById('deliveryTime')
+
+        total.innerHTML = "Your Total is: " + data.total
+        subtotal.innerHTML = "The subtotal (without tax): " + data.subtotal
+        tax.innerHTML = "The tax: " + data.tax
+
+        //adding all the items to the DOM in a table
+        for (let i = 0; i < data.items.length; i++) {
+        
+            let tr = document.createElement('tr')
+            let td1 = document.createElement('td')
+            let td2 = document.createElement('td')
+            let td3 = document.createElement('td')
+
+            td1.innerHTML = data.quantities[i]
+            td2.innerHTML = data.items[i]
+            td3.innerHTML = data.costs[i]
+
+            table.appendChild(tr)
+            tr.appendChild(td1)
+            tr.appendChild(td2)
+            tr.appendChild(td3)
+        }
+
+        delivery.innerText ="Delivery Time is: "+ data.deliveryTime
+
+    </script>
+</body>
+
+</html>
