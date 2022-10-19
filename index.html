@@ -1,68 +1,286 @@
 <!DOCTYPE html>
-<html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Details</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Jade Delight</title>
 </head>
 
 <body>
-    <div class="container">
-        <h2 id="total"></h2>
-        <h3 style="color: grey;" id="subtotal"></h3>
-        <h3 style="color: grey;" id="tax"></h3>
-        <hr>
-        <h3>Here Are Your Order Details:</h3>
-        <table id="table">
-            <tr>
+	<script>
 
-                <th style="padding:10px">Quantity</th>
-                <th style="padding:10px">Item</th>
-                <th style="padding:10px">Cost</th>
-            </tr>
+		function MenuItem(name, cost) {
+			this.name = name;
+			this.cost = cost;
+		}
 
+		menuItems = new Array(
+			new MenuItem("Chicken Chop Suey", 5.5),
+			new MenuItem("Sweet and Sour Pork", 7.25),
+			new MenuItem("Shrimp Lo Mein", 6.80),
+			new MenuItem("Moo Shi Chicken", 9.50),
+			new MenuItem("Fried Rice", 3.25)
+		);
 
-        </table>
-<hr>
-        <div style="padding:20px; color:grey" id="deliveryTime"></div>
-        <hr>
-    </div>
+		function makeSelect(name, minRange, maxRange) {
+			var t = "";
+			t = "<select name='" + name + "' size='1'>";
+			for (j = minRange; j <= maxRange; j++)
+				t += "<option>" + j + "</option>";
+			t += "</select>";
+			return t;
+		}
 
-    <script>
-        let data = JSON.parse(localStorage.getItem('order'))
-        let total = document.getElementById("total")
-        let subtotal = document.getElementById("subtotal")
-        let tax = document.getElementById("tax")
-        let table = document.getElementById('table')
-        let delivery = document.getElementById('deliveryTime')
+		function td(content, className = "") {
+			return "<td class = '" + className + "'>" + content + "</td>";
+		}
 
-        total.innerHTML = "Your Total is: $" + data.total
-        subtotal.innerHTML = "The subtotal (without tax): $" + data.subtotal
-        tax.innerHTML = "The tax: $" + data.tax
+	</script>
 
-        //adding all the items to the DOM in a table
-        for (let i = 0; i < data.items.length; i++) {
-        
-            let tr = document.createElement('tr')
-            let td1 = document.createElement('td')
-            let td2 = document.createElement('td')
-            let td3 = document.createElement('td')
+	<h1>Jade Delight</h1>
+	<form style="padding: 10px; border: 2px solid black">
+		<h3>Enter Your Details</h3>
+		<p style="display: flex;justify-content:space-between" class="userInfo"><label style="padding-right: 50px">First Name:</label> <input type="text" name='fname' /></p>
+		<p style="display: flex;justify-content:space-between" class="userInfo"><label style="padding-right: 50px">Last Name*:</label> <input type="text" name='lname' /></p>
+		<p style="display: flex;justify-content:space-between" class="userInfo address"><label style="padding-right: 50px">Street*:</label> <input type="text" name='street' /></p>
+		<p style="display: flex;justify-content:space-between" class="userInfo address"><label style="padding-right: 50px">City*:</label> <input type="text" name='city' /></p>
+		<p style="display: flex;justify-content:space-between" class="userInfo"><label style="padding-right: 50px">Phone*:</label> <input type="text" name='phone' /></p>
+		<hr>
+		<h3>Choose Pickup or Delivery</h3>
+		<p>
+			<input type="radio" name="p_or_d" value="pickup" checked="checked" />Pickup
+			<input type="radio" name='p_or_d' value='delivery' />
+			Delivery
+		</p>
+		<hr>
+		<h3>Take Your Picks!</h3>
+		<table border="0" cellpadding="3">
+			<tr>
+				<th>Select Item</th>
+				<th>Item Name</th>
+				<th>Cost Each</th>
+				<th>Total Cost</th>
+			</tr>
+			<script>
 
-            td1.innerHTML = data.quantities[i]
-            td2.innerHTML = data.items[i]
-            td3.innerHTML = data.costs[i]
+				var s = "";
+				for (i = 0; i < menuItems.length; i++) {
+					s += "<tr>";
+					s += td(makeSelect("quan" + i, 0, 10), "selectQuantity");
+					s += td(menuItems[i].name, "itemName");
+					s += td("$" + menuItems[i].cost.toFixed(2), "cost");
+					s += td("$<input type='text' name='cost'/>", "totalCost");
+					s += "</tr>";
+				}
+				document.writeln(s);
+			</script>
+		</table>
+		<hr>
+		<h3>Here is Your Bill</h3>
+		<p class="subtotal totalSection"><label>Subtotal</label>:
+			$ <input type="text" name='subtotal' id="subtotal" />
+		</p>
+		<p class="tax totalSection"><label>Mass tax 6.25%:</label>
+			$ <input type="text" name='tax' id="tax" />
+		</p>
+		<p class="total totalSection"><label>Total:</label> $ <input type="text" name='total' id="total" />
+		</p>
 
-            table.appendChild(tr)
-            tr.appendChild(td1)
-            tr.appendChild(td2)
-            tr.appendChild(td3)
-        }
+		<input type="button" value="Submit Order" />
 
-        delivery.innerText ="Delivery Time is: "+ data.deliveryTime
+	</form>
+	<!-- this script handles all of the extra functionality stated in the document -->
+	<script>
+		//the selectors
+		let totalcosts = document.querySelectorAll(".totalCost input")
+		let itemCosts = document.querySelectorAll(".cost")
+		let addressFields = document.getElementsByClassName("userInfo address")
+		let itemNames = document.getElementsByClassName("itemName")
+		let radButtons = document.getElementsByName('p_or_d')
+		let subtotalField = document.getElementById("subtotal")
+		let taxField = document.getElementById("tax")
+		let totalField = document.getElementById("total")
+		let deliveryTime;
+		let items = []
+		let quantities = []
+		let costs = []
+		// let costInputs= [0,0,0,0,0]
 
-    </script>
+		addressFields[0].style.display = "none"
+		addressFields[1].style.display = "none"
+		//this funciton calculates the total of the order without tax
+		function calcSubTotal() {
+
+			let subtotal = 0
+
+			//going through all of the total cost fields and getting their values
+			// those values are added to the subtotal 
+			for (let i = 0; i < totalcosts.length; i++) {
+				if (totalcosts[i].value) {
+
+					subtotal = parseFloat(subtotal) + parseFloat(totalcosts[i].value)
+					if(!items.includes(itemNames[i].innerHTML)){
+
+						items.push(itemNames[i].innerHTML)
+					}
+				}
+			}
+			subtotalField.value = subtotal
+
+			calcWithTax(subtotal)
+		}
+
+		//this function calculates the total after including the tax
+		function calcWithTax(subtotal) {
+
+			let withTax = subtotal + (subtotal * (6.25 / 100))  //adding the 6.25% tax
+
+			taxField.value = (withTax - subtotal).toFixed(2)
+			totalField.value = withTax.toFixed(2)
+		}
+
+		//this function performs all of the validations
+		// if any validations fail, the user is alerted and the order does not go through
+		function performValidations() {
+			let lastname = document.getElementsByName('lname')[0].value
+			let phone = document.getElementsByName('phone')[0].value
+
+			//checking if last name has been entered
+			if (lastname.length < 1) {
+				alert("Enter Last Name")
+				return false
+			}
+			// checking if the subtotal value length is 0
+			// this indicated that the user has not selected any item
+			// and so the subtotal field is empty
+			if (subtotalField.value.length < 1 || subtotalField.value === "0") {
+				alert("Please select an item")
+				return false
+			}
+			// checking if the number added is 7 or 10 digits
+			if (phone.length == 7 || phone.length == 10) {
+				return true
+			} else {
+				alert("Phone Number Should be of Lenght 7 or 10")
+				return false
+			}
+
+		}
+
+		//these are the selectors for all of the select inputs
+		document.getElementsByTagName('select')[0].onchange = function () {
+			var index = this.selectedIndex;
+			var inputText = this.children[index].innerHTML.trim();
+			let price = itemCosts[0].innerText.slice(1)
+			totalcosts[0].value = parseInt(inputText) * parseFloat(price)
+
+			quantities.push(parseInt(inputText))
+			costs.push(totalcosts[0].value)
+			calcSubTotal()
+		}
+		document.getElementsByTagName('select')[1].onchange = function () {
+			var index = this.selectedIndex;
+			var inputText = this.children[index].innerHTML.trim();
+			let price = itemCosts[1].innerText.slice(1)
+
+			totalcosts[1].value = parseInt(inputText) * parseFloat(price)
+			quantities.push(parseInt(inputText))
+			costs.push(totalcosts[1].value)
+			calcSubTotal()
+
+		}
+		document.getElementsByTagName('select')[2].onchange = function () {
+			var index = this.selectedIndex;
+			var inputText = this.children[index].innerHTML.trim();
+			let price = itemCosts[2].innerText.slice(1)
+
+			totalcosts[2].value = parseInt(inputText) * parseFloat(price)
+			quantities.push(parseInt(inputText))
+			costs.push(totalcosts[2].value)
+			calcSubTotal()
+
+		}
+		document.getElementsByTagName('select')[3].onchange = function () {
+			var index = this.selectedIndex;
+			var inputText = this.children[index].innerHTML.trim();
+			let price = itemCosts[3].innerText.slice(1)
+
+			totalcosts[3].value = parseInt(inputText) * parseFloat(price)
+			quantities.push(parseInt(inputText))
+			costs.push(totalcosts[3].value)
+			calcSubTotal()
+
+		}
+		document.getElementsByTagName('select')[4].onchange = function () {
+			var index = this.selectedIndex;
+			var inputText = this.children[index].innerHTML.trim();
+			let price = itemCosts[4].innerText.slice(1)
+
+			totalcosts[4].value = parseInt(inputText) * parseFloat(price)
+			quantities.push(parseInt(inputText))
+			costs.push(totalcosts[4].value)
+			calcSubTotal()
+
+		}
+
+		//these event handlers check which radio button is currently selected
+		// they hide or show the address fields accordingly
+		radButtons[0].onclick = function () {
+			addressFields[0].style.display = "none"
+			addressFields[1].style.display = "none"
+
+		}
+		radButtons[1].onclick = function () {
+			addressFields[0].style.display = "block"
+			addressFields[1].style.display = "block"
+		}
+
+		let inputs = document.getElementsByTagName("input")
+		let submitBTN = inputs[inputs.length - 1]
+
+		//this function is triggered after the submit button is clicked
+		submitBTN.onclick = function () {
+			localStorage.removeItem("order")
+
+			//first perform validations
+			let goAhead = performValidations()
+			// if the validations are good, then go ahead with the order
+			if (goAhead) {
+				//if the pickup option is selected, 20 mins are added to the current time
+				if (radButtons[0].checked) {
+					var oldDateObj = new Date();
+					var newDateObj = new Date();
+					newDateObj.setTime(oldDateObj.getTime() + (20 * 60 * 1000));
+					deliveryTime = newDateObj
+				}
+				//if the delivery option is selected, 40 mins are added to the current time
+				if (radButtons[1].checked) {
+					var oldDateObj = new Date();
+					var newDateObj = new Date();
+					newDateObj.setTime(oldDateObj.getTime() + (40 * 60 * 1000));
+					deliveryTime = newDateObj
+				}
+				console.log(items)
+				console.log(quantities)
+				console.log(costs)
+
+				let data = {
+					items: items,
+					quantities: quantities,
+					costs:costs,
+					subtotal: subtotalField.value,
+					tax: taxField.value,
+					total: totalField.value,
+					deliveryTime: deliveryTime
+				}
+				console.log(data)
+				localStorage.setItem('order', JSON.stringify(data))
+				alert("Thank you for your order!")
+
+				window.open('order_details.html')
+			}
+		}
+
+	</script>
 </body>
 
 </html>
