@@ -14,7 +14,7 @@
         <h3 style="color: grey;" id="subtotal"></h3>
         <h3 style="color: grey;" id="tax"></h3>
         <hr>
-        <h3>Here Are Your Order Details</h3>
+        <h3>Here Are Your Order Details:</h3>
         <table id="table">
             <tr>
 
@@ -38,9 +38,9 @@
         let table = document.getElementById('table')
         let delivery = document.getElementById('deliveryTime')
 
-        total.innerHTML = "Your Total is: " + data.total
-        subtotal.innerHTML = "The subtotal (without tax): " + data.subtotal
-        tax.innerHTML = "The tax: " + data.tax
+        total.innerHTML = "Your Total is: $" + data.total
+        subtotal.innerHTML = "The subtotal (without tax): $" + data.subtotal
+        tax.innerHTML = "The tax: $" + data.tax
 
         //adding all the items to the DOM in a table
         for (let i = 0; i < data.items.length; i++) {
